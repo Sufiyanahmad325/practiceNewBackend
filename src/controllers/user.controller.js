@@ -1,3 +1,4 @@
+import  {validate}  from "email-validator";
 import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -10,6 +11,15 @@ const registerUser = asyncHandler(async (req, res) => {
     if ([fullName, email, username, password].some((field) => field?.trim() == "")) {
         throw new ApiError(400, "all filed are required")
     }
+
+    const isEmailValid = validate(email);
+    if(!isEmailValid){
+            throw new ApiError(401 , "plaese check your email")
+    }
+
+    
+
+   
 
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
