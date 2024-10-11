@@ -1,7 +1,6 @@
 import express, { Router } from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import router from './routes/user.routes.js'
 
 
 const app = express()
@@ -22,6 +21,5 @@ app.use(cookieParser())
 //     res.send("hello sir ")
 // })
 
-app.use('/api/v1/users' ,router)
 
 export default app
