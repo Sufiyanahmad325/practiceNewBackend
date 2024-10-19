@@ -7,40 +7,92 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 
-export const registerUser= asyncHandler(async(req ,res)=>{
-    const {name , email , password , username } = req.body
+export const registerUser = asyncHandler(async (req, res) => {
+    const { name, email, password, username } = req.body
 
-    if([name , email , password , username].some((field)=>field.trim() === "")){
-        throw new  ApiError(400 , 'all field are required')
+    if ([name, email, password, username].some((field) => field.trim() == "")) {
+        throw new ApiError(400, "all field are required")
     }
 
-    const existedUser = await User.findOne({
-        $or:[{username} , {email}]
+    const userExists = await User.findOne({
+        $or: [{ email }, { username }]
     })
 
-
-    if(existedUser){
-            throw new ApiError(400 , "user all ready exist")
+    if (userExists) {
+        throw new ApiError(400, "user all ready exist from this username and email")
     }
 
     const user = await User.create({
         name,
-        username,
-        password,
-        email
-    });
+        username: username.toLowerCase(),
+        email,
+        password
+    })
 
 
+    const createdUser = await User.findById(user._id).select("-password")
 
-    const createdUser = await User.findById(user._id).select("-password");
-
-    if(!createdUser){
-        throw new ApiError(200 , "user not avalible")
+    if (!createdUser) {
+        throw new ApiError(401, "user does not exist")
     }
 
 
-    return res.status(201).json(
-        new ApiResponse(200, createdUser , "user register successfully")
+    return res.status(200).json(
+        new ApiResponse(200, createdUser, 'user register successfully')
     )
+
+})
+
+
+
+
+
+
+export const loginUser = asyncHandler(async (req, res) => {
+    const { email, username, password } = req.body
+
+    if ([email, username, password].some(feild => feild.trim() == "")) {
+        throw new ApiError(400, "all field are required")
+    }
+
+    const user = await User.findOne({
+        $or: [{ email }, { username }]
+    })
+
+    if (!user) {
+        throw new ApiError(201, "user does not exist")
+    }
+
+    const isPasswordCorrect = user.isPasswordCorrect(password)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(201, "check your email id and password")
+    }
+
+    const accessToken = await user.generateToken()
+
+    
+    const loggedInUser = await User.findOne({
+        $or: [{ email }, { username }]
+    }).select("-password")
+
+
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+
+    return res.status(201)
+        .cookie("accessToken", accessToken, options)
+        .json(
+            new ApiResponse(200, {
+                user: loggedInUser,
+                cookie: accessToken
+            },
+                "user logged in successfully"
+            )
+        )
 
 })
