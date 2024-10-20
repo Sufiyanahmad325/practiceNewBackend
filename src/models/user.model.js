@@ -66,9 +66,9 @@ UserSchema.methods.generateToken = async function () {
         email: this.email,
         name: this.name
     },
-        process.env.REFRESH_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 }

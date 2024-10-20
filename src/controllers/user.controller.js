@@ -71,7 +71,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     const accessToken = await user.generateToken()
 
-    
+
     const loggedInUser = await User.findOne({
         $or: [{ email }, { username }]
     }).select("-password")
@@ -96,3 +96,14 @@ export const loginUser = asyncHandler(async (req, res) => {
         )
 
 })
+
+
+
+
+export const getCurrentUser = asyncHandler(async(req ,res)=>{
+
+    return res.status(201).json(
+         new ApiResponse(201 , req.user , 'this is current user details')
+     )
+ 
+ })
