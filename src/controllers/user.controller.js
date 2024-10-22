@@ -63,7 +63,8 @@ export const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(201, "user does not exist")
     }
 
-    const isPasswordCorrect = user.isPasswordCorrect(password)
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
+    console.log(isPasswordCorrect)
 
     if (!isPasswordCorrect) {
         throw new ApiError(201, "check your email id and password")
@@ -130,3 +131,35 @@ export const getCurrentUser = asyncHandler(async(req ,res)=>{
         )
 
  })
+
+
+
+ export const changePassword =(asyncHandler(async(req , res)=>{
+
+    const {newPassword  , oldPassword} = req.body
+
+    if([newPassword , oldPassword].some(ele=>ele.trim() == "") ){
+        throw new ApiError(401 , "all field are required")
+    }
+
+    const user = await User.findById(req.user._id)
+
+    const ispasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if(!ispasswordCorrect){
+        throw new ApiError(400 , "Invalid old password")
+    }
+
+    user.password = newPassword
+
+    await user.save({validateBeforeSave:false})
+ 
+
+    return res.status(200)
+    .json(new ApiResponse(200, {} , "password change Successfully"))
+
+ }))
+
+
+
+
