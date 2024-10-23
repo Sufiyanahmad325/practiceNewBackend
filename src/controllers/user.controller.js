@@ -101,65 +101,87 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 
 
-export const getCurrentUser = asyncHandler(async(req ,res)=>{
+export const getCurrentUser = asyncHandler(async (req, res) => {
 
     return res.status(201).json(
-         new ApiResponse(201 , req.user , 'this is current user details')
-     )
- 
- })
+        new ApiResponse(201, req.user, 'this is current user details')
+    )
+
+})
 
 
 
 
 
 
- export const logOutUser = asyncHandler(async(req , res)=>{
+export const logOutUser = asyncHandler(async (req, res) => {
 
 
-  
 
-        const options ={
-            httpOnly:true,
-            secure:true
-        }
 
-        return res.status(200)
-        .clearCookie("accessToken" , options)
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200)
+        .clearCookie("accessToken", options)
         .json(
-            new ApiResponse(200, {} , "user logged out")
+            new ApiResponse(200, {}, "user logged out")
         )
 
- })
+})
 
 
 
- export const changePassword =(asyncHandler(async(req , res)=>{
+export const changePassword = (asyncHandler(async (req, res) => {
 
-    const {newPassword  , oldPassword} = req.body
+    const { newPassword, oldPassword } = req.body
 
-    if([newPassword , oldPassword].some(ele=>ele.trim() == "") ){
-        throw new ApiError(401 , "all field are required")
+    if ([newPassword, oldPassword].some(ele => ele.trim() == "")) {
+        throw new ApiError(401, "all field are required")
     }
 
     const user = await User.findById(req.user._id)
 
     const ispasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
-    if(!ispasswordCorrect){
-        throw new ApiError(400 , "Invalid old password")
+    if (!ispasswordCorrect) {
+        throw new ApiError(400, "Invalid old password")
     }
 
     user.password = newPassword
 
-    await user.save({validateBeforeSave:false})
- 
+    await user.save({ validateBeforeSave: false })
+
 
     return res.status(200)
-    .json(new ApiResponse(200, {} , "password change Successfully"))
+        .json(new ApiResponse(200, {}, "password change Successfully"))
 
- }))
-
-
+}))
 
 
+
+
+export const updateAccoount = asyncHandler(async(req, res) => {
+    const { email, name } = req.body
+
+    if (!email || !name) {
+        return new ApiError(400, "All field are rerquired")
+    }
+
+
+    const user = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            name,
+            email
+        },
+    }, { new: true }).select("-password")
+
+
+        return res.status(200).json(
+            new ApiResponse(200 , user , "Account details updated successfully")
+        )
+
+
+})
