@@ -185,3 +185,32 @@ export const updateAccoount = asyncHandler(async(req, res) => {
 
 
 })
+
+
+
+
+export const deleteAccount=asyncHandler(async(req ,res)=>{
+    const {password} = req.body
+
+    if(!password){
+         throw new ApiError(401 , "please enter your password to delete your account")
+    }
+
+    const user = await User.findById(req.user._id)
+    console.log(user)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
+
+
+    if(!isPasswordCorrect){
+        throw new ApiError(401 , "enter wrong password")
+    }
+
+
+    const accountDelete = await User.findByIdAndDelete(user._id)
+
+    return res.status(201).json(
+        new ApiResponse(201 , accountDelete , "account deleted successfully")
+    )
+
+})
