@@ -37,7 +37,17 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
 
-    return res.status(200).json(
+    const accessToken = await user.generateToken()
+
+    const options = {
+        httpOnly:true,
+        secure:true
+    }
+
+
+    return res.status(200)
+    .cookie("accessToken" , accessToken , options)
+    .json(
         new ApiResponse(200, createdUser, 'user register successfully')
     )
 
@@ -197,7 +207,6 @@ export const deleteAccount=asyncHandler(async(req ,res)=>{
     }
 
     const user = await User.findById(req.user._id)
-    console.log(user)
 
     const isPasswordCorrect = await user.isPasswordCorrect(password)
 
